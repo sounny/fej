@@ -1,5 +1,7 @@
 # FEJ Almanac Project
 
+[View Live Site](https://sounny.github.io/fej/)
+
 Welcome to the Florida Environmental Justice (FEJ) Almanac Project. This project aims to map various environmental hazards and spatially join them to demographic data to highlight disparities in exposure to environmental pollutants across different communities in Florida.
 
 The first segment of this project includes geocoding Superfund sites and spatially joining them with demographic data in the state of Florida. The goal is to analyze the data to determine if the public health risks associated with proximity to superfund sites affects disadvantaged individuals and groups disproportionately.
@@ -16,6 +18,11 @@ Since then, many have set out to define, identify, and address environmental jus
 - [Simone Gionfriddo](https://github.com/simonegionfriddo)
 - Annalise Schnur
 - Memrie King
+- Olivia Zhang
+
+## Partners
+
+- [Data Science for Sustainable Development Gainesville](https://gainesville.dssdglobal.org/projects/ej-dashboard)
 
 ## Datasets
 
