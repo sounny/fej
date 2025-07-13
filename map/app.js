@@ -4,7 +4,25 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '© OpenStreetMap contributors © CARTO'
 }).addTo(map);
 
-const markers = L.layerGroup().addTo(map);
+const clusterGroup = L.markerClusterGroup({
+  iconCreateFunction: (cluster) => {
+    const count = cluster.getChildCount();
+    let size = 'small';
+    if (count >= 50 && count < 100) size = 'medium';
+    else if (count >= 100 && count < 200) size = 'large';
+    else if (count >= 200) size = 'xlarge';
+    return L.divIcon({
+      html: `<div><span>${count}</span></div>`,
+      className: 'marker-cluster marker-cluster-' + size,
+      iconSize: [40, 40]
+    });
+  }
+});
+map.addLayer(clusterGroup);
+
+const bufferLayer = L.layerGroup().addTo(map);
+let sites = [];
+let bufferMiles = 0;
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -22,38 +40,77 @@ async function loadDataset(url) {
     const res = await fetch(url);
     const text = await res.text();
     return parseCSV(text);
-  } catch(e) {
+  } catch (e) {
     console.error('Failed to load dataset', e);
     return [];
   }
 }
 
 function updateMarkers(data) {
-  markers.clearLayers();
+  clusterGroup.clearLayers();
+  bufferLayer.clearLayers();
+  sites = [];
   data.forEach(row => {
     const lat = parseFloat(row.Latitude);
     const lng = parseFloat(row.Longitude);
-    if(!isNaN(lat) && !isNaN(lng)) {
-      L.marker([lat,lng]).bindPopup(row.Location || 'Site').addTo(markers);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      const marker = L.marker([lat, lng]).bindPopup(`<strong>${row.Location || 'Site'}</strong>`);
+      clusterGroup.addLayer(marker);
+      sites.push([lat, lng]);
     }
+  });
+  updateBuffers();
+}
+
+function updateBuffers() {
+  bufferLayer.clearLayers();
+  if (bufferMiles <= 0) return;
+  sites.forEach(([lat, lng]) => {
+    L.circle([lat, lng], {
+      radius: bufferMiles * 1609.34,
+      color: '#1976D2',
+      weight: 1,
+      fill: false
+    }).addTo(bufferLayer);
   });
 }
 
-document.getElementById('datasetSelect').addEventListener('change', async (e) => {
-  const url = e.target.value;
-  if(!url) return;
-  const data = await loadDataset(url);
-  updateMarkers(data);
+// dataset list click
+Array.from(document.querySelectorAll('#loadData li')).forEach(li => {
+  li.addEventListener('click', async () => {
+    const url = li.dataset.url;
+    const data = await loadDataset(url);
+    updateMarkers(data);
+  });
 });
 
-document.getElementById('fileInput').addEventListener('change', async (e) => {
+// file upload
+const fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
-  if(!file) return;
+  if (!file) return;
   const text = await file.text();
   const data = parseCSV(text);
   updateMarkers(data);
 });
 
-document.getElementById('menuToggle').addEventListener('click', () => {
-  document.getElementById('sideMenu').classList.toggle('open');
+// buffer slider
+const slider = document.getElementById('bufferSlider');
+const bufferValue = document.getElementById('bufferValue');
+slider.addEventListener('input', () => {
+  bufferMiles = parseFloat(slider.value);
+  bufferValue.textContent = bufferMiles;
+  updateBuffers();
+});
+
+// panel toggle
+const hamburger = document.getElementById('hamburger');
+const sidePanel = document.getElementById('sidePanel');
+hamburger.addEventListener('click', () => {
+  sidePanel.classList.toggle('closed');
+});
+
+// about button
+document.getElementById('aboutBtn').addEventListener('click', () => {
+  alert('Environmental Hazard Dashboard: visualizing environmental datasets in Florida.');
 });

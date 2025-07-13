@@ -1,52 +1,105 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #1e1e1e;
-  color: #eee;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #1B2636;
+  color: #FFFFFF;
 }
 
-#menuToggle {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+.top-bar {
+  display: flex;
+  align-items: center;
+  background: #1B2636;
+  color: #FFFFFF;
+  padding: 0 1rem;
+  height: 50px;
+}
+
+#hamburger {
   font-size: 24px;
+  margin-right: 1rem;
   cursor: pointer;
-  z-index: 1000;
-  color: #fff;
 }
 
-#sideMenu {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
+.top-bar h1 {
+  flex: 1;
+  font-size: 18px;
+  margin: 0;
+}
+
+#aboutBtn {
+  background: #1976D2;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+}
+
+#main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+#sidePanel {
   width: 250px;
-  background: #333;
-  padding: 20px;
+  background: #1B2636;
+  padding: 10px;
   box-sizing: border-box;
-  transform: translateX(-250px);
-  transition: transform 0.3s;
   overflow-y: auto;
-  z-index: 999;
+  transition: transform 0.3s;
 }
 
-#sideMenu.open {
-  transform: translateX(0);
-}
-
-#sideMenu h1 {
-  margin-top: 0;
-  font-size: 20px;
-  color: #fff;
-}
-
-#sideMenu select,
-#sideMenu input[type="file"] {
-  width: 100%;
-  margin-bottom: 10px;
+#sidePanel.closed {
+  transform: translateX(-250px);
 }
 
 #map {
+  flex: 1;
+}
+
+details {
+  margin-bottom: 10px;
+}
+
+details summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: bold;
+}
+
+#loadData li {
+  cursor: pointer;
+  color: #B0BEC5;
+  margin: 4px 0;
+}
+
+#bufferControl input[type=range] {
   width: 100%;
-  height: 100vh;
+}
+
+#bufferValue {
+  margin-left: 8px;
+}
+
+/* marker cluster colors */
+.marker-cluster-small {
+  background-color: #8BC34A;
+}
+.marker-cluster-medium {
+  background-color: #FFEB3B;
+}
+.marker-cluster-large {
+  background-color: #FF9800;
+}
+.marker-cluster-xlarge {
+  background-color: #F44336;
+}
+.marker-cluster div {
+  background-color: inherit;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  color: #000;
 }
