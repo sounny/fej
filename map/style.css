@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+#controls {
+  padding: 10px;
+  background: #f0f0f0;
+  display: flex;
+  gap: 10px;
+}
+#map {
+  width: 100%;
+  height: calc(100vh - 60px);
+}
