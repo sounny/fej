@@ -3,23 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Florida EJ Map</title>
+  <title>Environmental Hazard Dashboard</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="menuToggle">&#9776;</div>
-  <div id="sideMenu">
-    <h1>Florida EJ Map</h1>
-    <select id="datasetSelect">
-      <option value="">Select Dataset</option>
-      <option value="hazardous_sites_small.csv">Hazardous Waste Sites</option>
-      <option value="superfund_sites.csv">Superfund Sites</option>
-    </select>
-    <input type="file" id="fileInput" accept=".csv">
+  <header class="top-bar">
+    <div id="hamburger">&#9776;</div>
+    <h1>Environmental Hazard Dashboard</h1>
+    <button id="aboutBtn">About</button>
+  </header>
+  <div id="main">
+    <aside id="sidePanel" class="open">
+      <details id="loadData">
+        <summary>Load from dataset</summary>
+        <ul>
+          <li data-url="hazardous_sites_small.csv">Hazardous Waste Sites</li>
+          <li data-url="superfund_sites.csv">Superfund Sites</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Upload dataset</summary>
+        <input type="file" id="fileInput" accept=".csv,.geojson">
+      </details>
+      <details id="bufferControl">
+        <summary>Select buffer range (miles)</summary>
+        <input type="range" id="bufferSlider" min="0" max="20" value="0">
+        <span id="bufferValue">0</span>
+      </details>
+    </aside>
+    <div id="map"></div>
   </div>
-  <div id="map"></div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
