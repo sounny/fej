@@ -99,7 +99,7 @@ const slider = document.getElementById('bufferSlider');
 const bufferValue = document.getElementById('bufferValue');
 slider.addEventListener('input', () => {
   bufferMiles = parseFloat(slider.value);
-  bufferValue.textContent = bufferMiles;
+  bufferValue.textContent = bufferMiles.toFixed(2);
   updateBuffers();
 });
 
@@ -112,5 +112,5 @@ hamburger.addEventListener('click', () => {
 
 // about button
 document.getElementById('aboutBtn').addEventListener('click', () => {
-  alert('Environmental Hazard Dashboard: visualizing environmental datasets in Florida.');
+  window.location.href = 'https://sounny.github.io/fej';
 });
