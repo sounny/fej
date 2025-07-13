@@ -1,7 +1,7 @@
 const map = L.map('map').setView([28.5, -82], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   maxZoom: 19,
-  attribution: '© OpenStreetMap'
+  attribution: '© OpenStreetMap contributors © CARTO'
 }).addTo(map);
 
 const markers = L.layerGroup().addTo(map);
@@ -52,4 +52,8 @@ document.getElementById('fileInput').addEventListener('change', async (e) => {
   const text = await file.text();
   const data = parseCSV(text);
   updateMarkers(data);
+});
+
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sideMenu').classList.toggle('open');
 });

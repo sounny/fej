@@ -1,14 +1,52 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
+  background: #1e1e1e;
+  color: #eee;
 }
-#controls {
-  padding: 10px;
-  background: #f0f0f0;
-  display: flex;
-  gap: 10px;
+
+#menuToggle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1000;
+  color: #fff;
 }
+
+#sideMenu {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 250px;
+  background: #333;
+  padding: 20px;
+  box-sizing: border-box;
+  transform: translateX(-250px);
+  transition: transform 0.3s;
+  overflow-y: auto;
+  z-index: 999;
+}
+
+#sideMenu.open {
+  transform: translateX(0);
+}
+
+#sideMenu h1 {
+  margin-top: 0;
+  font-size: 20px;
+  color: #fff;
+}
+
+#sideMenu select,
+#sideMenu input[type="file"] {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
 #map {
   width: 100%;
-  height: calc(100vh - 60px);
+  height: 100vh;
 }

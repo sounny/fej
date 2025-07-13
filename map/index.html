@@ -8,11 +8,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="controls">
+  <div id="menuToggle">&#9776;</div>
+  <div id="sideMenu">
+    <h1>Florida EJ Map</h1>
     <select id="datasetSelect">
       <option value="">Select Dataset</option>
-      <option value="https://gainesville.dssdglobal.org/projects/ej-dashboard/hazardous_sites_small.csv">Hazardous Waste Sites</option>
-      <option value="https://gainesville.dssdglobal.org/projects/ej-dashboard/superfund_sites.csv">Superfund Sites</option>
+      <option value="hazardous_sites_small.csv">Hazardous Waste Sites</option>
+      <option value="superfund_sites.csv">Superfund Sites</option>
     </select>
     <input type="file" id="fileInput" accept=".csv">
   </div>
