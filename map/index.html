@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Florida EJ Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2g3YpGPC1L1fMdGII4XESyqCC3vVMh1SrFY/T0I=" crossorigin=""/>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="controls">
+    <select id="datasetSelect">
+      <option value="">Select Dataset</option>
+      <option value="https://gainesville.dssdglobal.org/projects/ej-dashboard/hazardous_sites_small.csv">Hazardous Waste Sites</option>
+      <option value="https://gainesville.dssdglobal.org/projects/ej-dashboard/superfund_sites.csv">Superfund Sites</option>
+    </select>
+    <input type="file" id="fileInput" accept=".csv">
+  </div>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-pMprOw6Nsap0nZdFvRzJU4UutP2FpW3XkdZcJdrPCVU=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
