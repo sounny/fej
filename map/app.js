@@ -24,6 +24,7 @@ const bufferLayer = L.layerGroup().addTo(map);
 let sites = [];
 let proximalMiles = 0;
 let distalMiles = 0;
+const CENSUS_API_KEY = 'bf7969bb8b520c9011c65dfbea35994c603a38d7';
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -148,3 +149,49 @@ hamburger.addEventListener('click', () => {
 document.getElementById('aboutBtn').addEventListener('click', () => {
   window.location.href = 'https://sounny.github.io/fej';
 });
+
+async function getBlockGroups(lat, lng, radiusMeters) {
+  const url = `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/10/query?where=1%3D1&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&distance=${radiusMeters}&units=esriSRUnit_Meter&outFields=STATE,COUNTY,TRACT,BLKGRP&returnGeometry=false&f=json`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.features ? data.features.map(f => f.attributes) : [];
+}
+
+async function fetchACS(state, county, tract, blkgrp) {
+  const url = `https://api.census.gov/data/2023/acs/acs5?get=B02001_001E,B02001_003E&for=block%20group:${blkgrp}&in=state:${state}%20county:${county}%20tract:${tract}&key=${CENSUS_API_KEY}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data[1];
+}
+
+async function compileDemographics() {
+  const radius = proximalMiles * 1609.34;
+  if (radius <= 0) return;
+  const unique = new Set();
+  for (const [lat, lng] of sites) {
+    const bgs = await getBlockGroups(lat, lng, radius);
+    bgs.forEach(bg => unique.add(`${bg.STATE}|${bg.COUNTY}|${bg.TRACT}|${bg.BLKGRP}`));
+  }
+  let totalPop = 0;
+  let totalBlack = 0;
+  for (const key of unique) {
+    const [s, c, t, b] = key.split('|');
+    const row = await fetchACS(s, c, t, b);
+    if (row) {
+      const pop = parseInt(row[0]);
+      const black = parseInt(row[1]);
+      if (!isNaN(pop) && !isNaN(black)) {
+        totalPop += pop;
+        totalBlack += black;
+      }
+    }
+  }
+  if (totalPop > 0) {
+    const percent = (totalBlack / totalPop) * 100;
+    alert(`Average percent Black: ${percent.toFixed(2)}%`);
+  } else {
+    alert('No demographic data found.');
+  }
+}
+
+document.getElementById('demographicsBtn').addEventListener('click', compileDemographics);
