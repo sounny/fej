@@ -24,10 +24,6 @@ Since then, many have set out to define, identify, and address environmental jus
 
 - [Data Science for Sustainable Development Gainesville](https://gainesville.dssdglobal.org/projects/ej-dashboard)
 
-## Datasets
-
-- Datasets (Coming Soon)
-
 ## Tools
 
 - Environmental Hazard Mapping Tool (Coming Soon)
