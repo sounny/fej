@@ -108,6 +108,9 @@ const hamburger = document.getElementById('hamburger');
 const sidePanel = document.getElementById('sidePanel');
 hamburger.addEventListener('click', () => {
   sidePanel.classList.toggle('closed');
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 310);
 });
 
 // about button
