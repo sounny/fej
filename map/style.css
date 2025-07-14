@@ -81,11 +81,13 @@ details summary {
   margin: 4px 0;
 }
 
-#bufferControl input[type=range] {
+#bufferControl input[type=range],
+#distalControl input[type=range] {
   width: 100%;
 }
 
-#bufferValue {
+#proximalValue,
+#distalValue {
   margin-left: 8px;
 }
 

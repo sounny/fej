@@ -30,9 +30,14 @@
         <div><a href="template.csv" download>Download template CSV</a></div>
       </details>
       <details id="bufferControl">
-        <summary>Select buffer range (miles)</summary>
-        <input type="range" id="bufferSlider" min="0" max="20" value="0" step="0.25">
-        <span id="bufferValue">0.00</span>
+        <summary>Select proximal buffer range (miles)</summary>
+        <input type="range" id="proximalSlider" min="0" max="20" value="0" step="0.25">
+        <span id="proximalValue">0.00</span>
+      </details>
+      <details id="distalControl">
+        <summary>Select distal buffer range (miles)</summary>
+        <input type="range" id="distalSlider" min="0" max="100" value="0" step="0.25">
+        <span id="distalValue">0.00</span>
       </details>
     </aside>
     <div id="map"></div>
