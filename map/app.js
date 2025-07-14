@@ -22,7 +22,8 @@ map.addLayer(clusterGroup);
 
 const bufferLayer = L.layerGroup().addTo(map);
 let sites = [];
-let bufferMiles = 0;
+let proximalMiles = 0;
+let distalMiles = 0;
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -64,14 +65,24 @@ function updateMarkers(data) {
 
 function updateBuffers() {
   bufferLayer.clearLayers();
-  if (bufferMiles <= 0) return;
+  if (proximalMiles <= 0 && distalMiles <= 0) return;
   sites.forEach(([lat, lng]) => {
-    L.circle([lat, lng], {
-      radius: bufferMiles * 1609.34,
-      color: '#1976D2',
-      weight: 1,
-      fill: false
-    }).addTo(bufferLayer);
+    if (distalMiles > 0) {
+      L.circle([lat, lng], {
+        radius: distalMiles * 1609.34,
+        color: '#F57C00',
+        weight: 1,
+        fill: false
+      }).addTo(bufferLayer);
+    }
+    if (proximalMiles > 0) {
+      L.circle([lat, lng], {
+        radius: proximalMiles * 1609.34,
+        color: '#1976D2',
+        weight: 1,
+        fill: false
+      }).addTo(bufferLayer);
+    }
   });
 }
 
@@ -94,12 +105,32 @@ fileInput.addEventListener('change', async (e) => {
   updateMarkers(data);
 });
 
-// buffer slider
-const slider = document.getElementById('bufferSlider');
-const bufferValue = document.getElementById('bufferValue');
-slider.addEventListener('input', () => {
-  bufferMiles = parseFloat(slider.value);
-  bufferValue.textContent = bufferMiles.toFixed(2);
+// proximal and distal sliders
+const proximalSlider = document.getElementById('proximalSlider');
+const distalSlider = document.getElementById('distalSlider');
+const proximalValue = document.getElementById('proximalValue');
+const distalValue = document.getElementById('distalValue');
+
+function updateDistalMin() {
+  distalSlider.min = proximalMiles.toString();
+  if (parseFloat(distalSlider.value) < proximalMiles) {
+    distalSlider.value = proximalMiles;
+    distalMiles = proximalMiles;
+    distalValue.textContent = distalMiles.toFixed(2);
+  }
+}
+
+proximalSlider.addEventListener('input', () => {
+  proximalMiles = parseFloat(proximalSlider.value);
+  proximalValue.textContent = proximalMiles.toFixed(2);
+  updateDistalMin();
+  updateBuffers();
+});
+
+distalSlider.addEventListener('input', () => {
+  distalMiles = Math.max(parseFloat(distalSlider.value), proximalMiles);
+  distalSlider.value = distalMiles;
+  distalValue.textContent = distalMiles.toFixed(2);
   updateBuffers();
 });
 
