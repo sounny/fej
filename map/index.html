@@ -29,6 +29,17 @@
         <input type="file" id="fileInput" accept=".csv,.geojson">
         <div><a href="template.csv" download>Download template CSV</a></div>
       </details>
+      <details>
+        <summary>Selection Instructions</summary>
+        <div style="font-size: 12px; color: #666; padding: 5px;">
+          1. Load a dataset above<br>
+          2. Use layer control (top-right) to switch map styles<br>
+          3. Click individual markers to select them<br>
+          4. Selected markers turn red<br>
+          5. Set buffer distances below<br>
+          6. Click "Get Demographics" to analyze
+        </div>
+      </details>
       <details id="bufferControl">
         <summary>Select proximal buffer range (miles)</summary>
         <input type="range" id="proximalSlider" min="0" max="20" value="0" step="0.25">
@@ -40,6 +51,13 @@
         <span id="distalValue">0.00</span>
       </details>
       <button id="demographicsBtn">Get Demographics</button>
+      <details open>
+        <summary>Search by Address</summary>
+        <div id="search-container">
+          <input type="text" id="search-input" placeholder="Enter address, city, or zip...">
+          <button id="search-btn">Search</button>
+        </div>
+      </details>
     </aside>
     <div id="map"></div>
   </div>
