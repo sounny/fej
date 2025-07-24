@@ -63,6 +63,24 @@ body {
 
 #map {
   flex: 1;
+  position: relative;
+}
+
+#north-arrow {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  background: rgba(27, 38, 54, 0.7);
+  border-radius: 8px;
+  padding: 4px 8px 2px 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 details {
@@ -118,6 +136,8 @@ details summary {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
   padding: 8px !important;
   min-width: 150px;
+  margin-bottom: 20px !important;
+  margin-left: 20px !important;
 }
 
 .leaflet-control-layers-expanded {

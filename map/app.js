@@ -25,7 +25,7 @@ baseLayers["Dark Theme"].addTo(map);
 
 // Add layer control
 const layerControl = L.control.layers(baseLayers, null, {
-  position: 'topright',
+  position: 'bottomleft',
   collapsed: false
 }).addTo(map);
 
