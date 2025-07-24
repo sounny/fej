@@ -17,7 +17,7 @@ Since then, many have set out to define, identify, and address environmental jus
 - [Moulay Anwar Sounny-Slitine, PhD](https://sounny.github.io/)
 - [Simone Gionfriddo](https://github.com/simonegionfriddo)
 - Annalise Schnur
-- Memrie King
+- [Memrie King](https://github.com/mem-cking)
 - Olivia Zhang
 
 ## Partners
