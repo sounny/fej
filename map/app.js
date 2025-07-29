@@ -271,6 +271,13 @@ Array.from(document.querySelectorAll('#loadData li')).forEach(li => {
     const url = li.dataset.url;
     const data = await loadDataset(url);
     updateMarkers(data);
+    
+    // Update legend based on dataset type
+    if (url === 'superfund_sites.csv') {
+      updateLegend('superfund');
+    } else if (url === 'hazardous_sites_small.csv') {
+      updateLegend('hazardous');
+    }
   });
 });
 
@@ -282,6 +289,8 @@ fileInput.addEventListener('change', async (e) => {
   const text = await file.text();
   const data = parseCSV(text);
   updateMarkers(data);
+  // Update legend for custom uploaded data
+  updateLegend('custom');
 });
 
 // proximal and distal sliders
@@ -306,6 +315,10 @@ proximalSlider.addEventListener('input', () => {
   if (selectedMarkers.size > 0) {
     updateBuffers();
   }
+  // Update legend with new buffer values
+  if (currentDataType) {
+    updateLegend(currentDataType);
+  }
 });
 
 distalSlider.addEventListener('input', () => {
@@ -314,6 +327,10 @@ distalSlider.addEventListener('input', () => {
   distalValue.textContent = distalMiles.toFixed(2);
   if (selectedMarkers.size > 0) {
     updateBuffers();
+  }
+  // Update legend with new buffer values
+  if (currentDataType) {
+    updateLegend(currentDataType);
   }
 });
 
@@ -449,5 +466,93 @@ document.getElementById('search-btn').addEventListener('click', searchAddress);
 document.getElementById('search-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     searchAddress();
+  }
+});
+
+// Legend management
+let currentDataType = null;
+
+function updateLegend(dataType) {
+  const legendContent = document.getElementById('legend-content');
+  const legend = document.getElementById('legend');
+  
+  if (!dataType) {
+    legend.classList.add('hidden');
+    return;
+  }
+  
+  legend.classList.remove('hidden');
+  legendContent.innerHTML = '';
+  currentDataType = dataType;
+  
+  // Add marker legend based on data type
+  if (dataType === 'superfund') {
+    legendContent.innerHTML = `
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #ff4444;"></div>
+        <span class="legend-label">Selected Superfund Sites</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #4444ff;"></div>
+        <span class="legend-label">Superfund Sites</span>
+      </div>
+    `;
+  } else if (dataType === 'hazardous') {
+    legendContent.innerHTML = `
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #ff4444;"></div>
+        <span class="legend-label">Selected Hazardous Sites</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #ff8800;"></div>
+        <span class="legend-label">Hazardous Waste Sites</span>
+      </div>
+    `;
+  } else if (dataType === 'custom') {
+    legendContent.innerHTML = `
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #ff4444;"></div>
+        <span class="legend-label">Selected Sites</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background-color: #2196F3;"></div>
+        <span class="legend-label">Custom Data Sites</span>
+      </div>
+    `;
+  }
+  
+  // Add buffer legends if active
+  addBufferLegends();
+}
+
+function addBufferLegends() {
+  const legendContent = document.getElementById('legend-content');
+  const proximalValue = parseFloat(document.getElementById('proximalSlider').value);
+  const distalValue = parseFloat(document.getElementById('distalSlider').value);
+  
+  if (proximalValue > 0) {
+    legendContent.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-color buffer" style="background-color: rgba(255, 0, 0, 0.3);"></div>
+        <span class="legend-label">Proximal Buffer (${proximalValue} mi)</span>
+      </div>
+    `;
+  }
+  
+  if (distalValue > 0) {
+    legendContent.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-color buffer" style="background-color: rgba(0, 0, 255, 0.3);"></div>
+        <span class="legend-label">Distal Buffer (${distalValue} mi)</span>
+      </div>
+    `;
+  }
+}
+
+// Initialize legend as hidden
+document.addEventListener('DOMContentLoaded', function() {
+  const legend = document.getElementById('legend');
+  if (legend) {
+    legend.classList.add('hidden');
   }
 });
