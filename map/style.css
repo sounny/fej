@@ -215,6 +215,7 @@ details summary {
   z-index: 1000;
   max-width: 220px;
   min-width: 180px;
+  display: block !important;
 }
 
 .legend-control h4 {
@@ -253,10 +254,12 @@ details summary {
   line-height: 1.2;
 }
 
-/* Hide legend initially */
+/* Hide legend initially - COMMENTED OUT FOR TESTING */
+/*
 .legend-control.hidden {
   display: none;
 }
+*/
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
