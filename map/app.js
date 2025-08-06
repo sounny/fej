@@ -138,54 +138,10 @@ function toggleMarkerSelection(marker) {
 
 function updateSelectionInfo() {
   const count = selectedMarkers.size;
-  let selectionInfo = document.getElementById('selection-info');
-  
-  if (!selectionInfo) {
-    // Create selection info element
-    selectionInfo = document.createElement('div');
-    selectionInfo.id = 'selection-info';
-    selectionInfo.style.cssText = `
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 1000;
-      font-family: Arial, sans-serif;
-      max-width: 200px;
-    `;
-    document.body.appendChild(selectionInfo);
+  const info = document.getElementById('selectionCount');
+  if (info) {
+    info.textContent = `Selected Points: ${count}`;
   }
-  
-  selectionInfo.innerHTML = `
-    <div><strong>Selected Points: ${count}</strong></div>
-    ${count > 0 ? `
-      <button onclick="analyzeSelectedPoints()" style="
-        background: #1976D2;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 3px;
-        cursor: pointer;
-        margin-top: 5px;
-        width: 100%;
-        font-size: 12px;
-      ">Analyze Selected</button>
-      <button onclick="clearSelection()" style="
-        background: #666;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 3px;
-        cursor: pointer;
-        margin-top: 3px;
-        width: 100%;
-        font-size: 12px;
-      ">Clear Selection</button>
-    ` : '<div style="color: #666; font-size: 12px; margin-top: 5px;">Click markers to select</div>'}
-  `;
 }
 
 function clearSelection() {
@@ -250,24 +206,8 @@ function updateBuffers() {
   });
 }
 
-async function analyzeSelectedPoints() {
-  if (selectedMarkers.size === 0) {
-    alert('Please select at least one point by clicking on markers.');
-    return;
-  }
-  
-  console.log(`Analyzing ${selectedMarkers.size} selected points...`);
-  updateBuffers();
-  
-  if (proximalMiles > 0) {
-    await compileDemographics();
-  } else {
-    alert('Please set a proximal buffer distance first.');
-  }
-}
-
 // dataset list click
-Array.from(document.querySelectorAll('#loadData li')).forEach(li => {
+Array.from(document.querySelectorAll('#dataStep li')).forEach(li => {
   li.addEventListener('click', async () => {
     const url = li.dataset.url;
     const data = await loadDataset(url);
@@ -317,22 +257,6 @@ distalSlider.addEventListener('input', () => {
     updateBuffers();
   }
 });
-
-// panel toggle
-const hamburger = document.getElementById('hamburger');
-const sidePanel = document.getElementById('sidePanel');
-const panelHandle = document.getElementById('panelHandle');
-
-function togglePanel() {
-  sidePanel.classList.toggle('closed');
-  panelHandle.innerHTML = sidePanel.classList.contains('closed') ? '&#10095;' : '&#10094;';
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 310);
-}
-
-hamburger.addEventListener('click', togglePanel);
-panelHandle.addEventListener('click', togglePanel);
 
 // about button
 document.getElementById('aboutBtn').addEventListener('click', () => {
@@ -476,6 +400,8 @@ async function compileDemographics() {
     chartLabel = `${label} per 1,000 residents`;
   }
 
+  const chartContainer = document.getElementById('chartContainer');
+  chartContainer.innerHTML = '<canvas id="demographicChart"></canvas>';
   const ctx = document.getElementById('demographicChart').getContext('2d');
   if (demographicChart) {
     demographicChart.destroy();
@@ -502,12 +428,17 @@ async function compileDemographics() {
   });
 }
 
-document.getElementById('demographicsBtn').addEventListener('click', () => {
+document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
+
+document.getElementById('analyzeBtn').addEventListener('click', async () => {
   if (selectedMarkers.size === 0) {
     alert('Please select points first by clicking on markers, then try again.');
     return;
   }
-  compileDemographics();
+  updateBuffers();
+  const chartContainer = document.getElementById('chartContainer');
+  chartContainer.innerHTML = '<div class="loading">Loading...</div>';
+  await compileDemographics();
 });
 
 // Address Search Functionality
