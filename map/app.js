@@ -321,16 +321,32 @@ distalSlider.addEventListener('input', () => {
 // panel toggle
 const hamburger = document.getElementById('hamburger');
 const sidePanel = document.getElementById('sidePanel');
-hamburger.addEventListener('click', () => {
+const panelHandle = document.getElementById('panelHandle');
+
+function togglePanel() {
   sidePanel.classList.toggle('closed');
+  panelHandle.innerHTML = sidePanel.classList.contains('closed') ? '&#10095;' : '&#10094;';
   setTimeout(() => {
     map.invalidateSize();
   }, 310);
-});
+}
+
+hamburger.addEventListener('click', togglePanel);
+panelHandle.addEventListener('click', togglePanel);
 
 // about button
 document.getElementById('aboutBtn').addEventListener('click', () => {
   window.location.href = 'https://sounny.github.io/fej';
+});
+
+// fullscreen toggle
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+fullscreenBtn.addEventListener('click', () => {
+  document.body.classList.toggle('fullscreen');
+  fullscreenBtn.textContent = document.body.classList.contains('fullscreen') ? 'Exit Full Screen' : 'Full Screen';
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 310);
 });
 
 async function getBlockGroups(lat, lng, radiusMeters) {
@@ -340,26 +356,42 @@ async function getBlockGroups(lat, lng, radiusMeters) {
   return data.features ? data.features.map(f => f.attributes) : [];
 }
 
-async function fetchACS(state, county, tract, blkgrp, variable) {
-  const url = `https://api.census.gov/data/2023/acs/acs5?get=B02001_001E,${variable}&for=block%20group:${blkgrp}&in=state:${state}%20county:${county}%20tract:${tract}&key=${CENSUS_API_KEY}`;
+async function fetchACSCount(state, county, tract, blkgrp, variables, totalVar) {
+  const queryVars = [totalVar, ...variables].join(',');
+  const url = `https://api.census.gov/data/2023/acs/acs5?get=${queryVars}&for=block%20group:${blkgrp}&in=state:${state}%20county:${county}%20tract:${tract}&key=${CENSUS_API_KEY}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Census API request failed with status ${res.status}`);
   }
   const data = await res.json();
-  if (!Array.isArray(data) || data.length < 2) {
-    throw new Error('Unexpected Census API response');
-  }
   const row = data[1];
-  return {
-    pop: parseInt(row[0]),
-    value: parseInt(row[1])
-  };
+  const pop = parseInt(row[0]);
+  let value = 0;
+  for (let i = 1; i <= variables.length; i++) {
+    value += parseInt(row[i]);
+  }
+  // Note: Census API appends state, county, tract, blkgrp at end of row
+  return { pop, value };
+}
+
+async function fetchACSMedian(state, county, tract, blkgrp, variable) {
+  const url = `https://api.census.gov/data/2023/acs/acs5?get=${variable}&for=block%20group:${blkgrp}&in=state:${state}%20county:${county}%20tract:${tract}&key=${CENSUS_API_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Census API request failed with status ${res.status}`);
+  }
+  const data = await res.json();
+  const row = data[1];
+  return parseInt(row[0]);
 }
 
 async function compileDemographics() {
-  const variable = document.getElementById('demographicSelect').value;
-  const label = document.querySelector('#demographicSelect option:checked').dataset.label;
+  const select = document.getElementById('demographicSelect');
+  const option = select.selectedOptions[0];
+  const variables = option.dataset.variables.split(',');
+  const label = option.dataset.label;
+  const totalVar = option.dataset.total;
+  const type = option.dataset.type;
   const proxRadius = proximalMiles * 1609.34;
   if (proxRadius <= 0 || selectedMarkers.size === 0) {
     alert('Please select points and set a proximal buffer distance.');
@@ -387,36 +419,62 @@ async function compileDemographics() {
 
   proximalSet.forEach(k => distalSet.delete(k));
 
-  let proxPop = 0, proxVal = 0;
+  let proxMetric = 0, distMetric = 0;
+  let proxPop = 0, distPop = 0;
+  let proxCount = 0, distCount = 0;
+
   for (const key of proximalSet) {
     const [s, c, t, b] = key.split('|');
     try {
-      const data = await fetchACS(s, c, t, b, variable);
-      if (!isNaN(data.pop) && !isNaN(data.value)) {
-        proxPop += data.pop;
-        proxVal += data.value;
+      if (type === 'median') {
+        const median = await fetchACSMedian(s, c, t, b, variables[0]);
+        if (!isNaN(median)) {
+          proxMetric += median;
+          proxCount++;
+        }
+      } else {
+        const data = await fetchACSCount(s, c, t, b, variables, totalVar);
+        if (!isNaN(data.pop) && !isNaN(data.value)) {
+          proxPop += data.pop;
+          proxMetric += data.value;
+        }
       }
     } catch (error) {
       console.error(`Error fetching ACS data for ${key}:`, error);
     }
   }
 
-  let distPop = 0, distVal = 0;
   for (const key of distalSet) {
     const [s, c, t, b] = key.split('|');
     try {
-      const data = await fetchACS(s, c, t, b, variable);
-      if (!isNaN(data.pop) && !isNaN(data.value)) {
-        distPop += data.pop;
-        distVal += data.value;
+      if (type === 'median') {
+        const median = await fetchACSMedian(s, c, t, b, variables[0]);
+        if (!isNaN(median)) {
+          distMetric += median;
+          distCount++;
+        }
+      } else {
+        const data = await fetchACSCount(s, c, t, b, variables, totalVar);
+        if (!isNaN(data.pop) && !isNaN(data.value)) {
+          distPop += data.pop;
+          distMetric += data.value;
+        }
       }
     } catch (error) {
       console.error(`Error fetching ACS data for ${key}:`, error);
     }
   }
 
-  const proxPerCapita = proxPop > 0 ? (proxVal / proxPop) * 1000 : 0;
-  const distPerCapita = distPop > 0 ? (distVal / distPop) * 1000 : 0;
+  let proxValue, distValue, chartLabel;
+  if (type === 'median') {
+    proxValue = proxCount > 0 ? proxMetric / proxCount : 0;
+    distValue = distCount > 0 ? distMetric / distCount : 0;
+    chartLabel = label;
+  } else {
+    proxValue = proxPop > 0 ? (proxMetric / proxPop) * 1000 : 0;
+    distValue = distPop > 0 ? (distMetric / distPop) * 1000 : 0;
+    chartLabel = `${label} per 1,000 residents`;
+  }
 
   const ctx = document.getElementById('demographicChart').getContext('2d');
   if (demographicChart) {
@@ -427,8 +485,8 @@ async function compileDemographics() {
     data: {
       labels: ['Proximal', 'Distal'],
       datasets: [{
-        label: `${label} per 1,000 residents`,
-        data: [proxPerCapita, distPerCapita],
+        label: chartLabel,
+        data: [proxValue, distValue],
         backgroundColor: ['#1976D2', '#F57C00']
       }]
     },

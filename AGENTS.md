@@ -16,6 +16,7 @@ Welcome to the FEJ Almanac Project repository.
 
 ## Agent Log
 
+2025-08-07: Added dashboard fullscreen toggle, responsive side panel handle with expanded demographic options including income and education (OpenAI Assistant).
 2025-08-06: Added side-panel charts comparing proximal and distal buffers with per capita metrics and selectable demographic markers (OpenAI Assistant).
 2025-08-06: Updated Census API key and added error handling for failed requests in map/app.js (OpenAI Assistant).
 
