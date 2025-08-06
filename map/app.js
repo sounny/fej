@@ -53,7 +53,7 @@ let allMarkers = [];
 let currentData = [];
 let proximalMiles = 0;
 let distalMiles = 0;
-const CENSUS_API_KEY = 'bf7969bb8b520c9011c65dfbea35994c603a38d7';
+const CENSUS_API_KEY = 'e2677b4b093f3854677b6ba1d053c918520641ae';
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
@@ -342,7 +342,13 @@ async function getBlockGroups(lat, lng, radiusMeters) {
 async function fetchACS(state, county, tract, blkgrp) {
   const url = `https://api.census.gov/data/2023/acs/acs5?get=B02001_001E,B02001_003E&for=block%20group:${blkgrp}&in=state:${state}%20county:${county}%20tract:${tract}&key=${CENSUS_API_KEY}`;
   const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Census API request failed with status ${res.status}`);
+  }
   const data = await res.json();
+  if (!Array.isArray(data) || data.length < 2) {
+    throw new Error('Unexpected Census API response');
+  }
   return data[1];
 }
 

@@ -16,4 +16,6 @@ Welcome to the FEJ Almanac Project repository.
 
 ## Agent Log
 
+2025-08-06: Updated Census API key and added error handling for failed requests in map/app.js (OpenAI Assistant).
+
 (Place new entries here, with the most recent at the top.)
