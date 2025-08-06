@@ -44,8 +44,8 @@ body {
 }
 
 #sidePanel {
-  width: 250px;
-  background: #1B2636;
+  width: 300px;
+  background: #232F41;
   padding: 10px;
   box-sizing: border-box;
   overflow-y: auto;
@@ -198,4 +198,31 @@ details summary {
 
 #search-btn:hover {
   background: #1565C0;
+}
+
+#chartPanel {
+  background: #1B2636;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+#chartPanel select {
+  width: 100%;
+  margin-top: 5px;
+  padding: 4px;
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+}
+
+#chartContainer {
+  width: 100%;
+  height: 180px;
+  margin-top: 10px;
+}
+
+#chartContainer canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
