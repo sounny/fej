@@ -13,10 +13,12 @@
   <header class="top-bar">
     <div id="hamburger">&#9776;</div>
     <h1>Environmental Hazard Dashboard</h1>
+    <button id="fullscreenBtn">Full Screen</button>
     <button id="aboutBtn">About</button>
   </header>
   <div id="main">
     <aside id="sidePanel" class="open">
+      <div id="panelHandle" class="panel-handle">&#10094;</div>
       <details id="loadData">
         <summary>Load from dataset</summary>
         <ul>
@@ -55,8 +57,14 @@
         <summary>Demographic Chart</summary>
         <label for="demographicSelect">Data Marker:</label>
         <select id="demographicSelect">
-          <option value="B02001_003E" data-label="Black or African American">Black or African American</option>
-          <option value="B02001_002E" data-label="White">White</option>
+          <option value="B03002_003E" data-label="Non-Hispanic White" data-total="B03002_001E" data-type="rate" data-variables="B03002_003E">Non-Hispanic White</option>
+          <option value="B03002_004E" data-label="Non-Hispanic Black" data-total="B03002_001E" data-type="rate" data-variables="B03002_004E">Non-Hispanic Black</option>
+          <option value="B03002_006E" data-label="Asian" data-total="B03002_001E" data-type="rate" data-variables="B03002_006E">Asian</option>
+          <option value="B03002_005E" data-label="Native American" data-total="B03002_001E" data-type="rate" data-variables="B03002_005E">Native American</option>
+          <option value="B03002_012E" data-label="Hispanic or Latino" data-total="B03002_001E" data-type="rate" data-variables="B03002_012E">Hispanic or Latino</option>
+          <option value="B03002_007E,B03002_008E,B03002_009E" data-label="Other (Non-Hispanic)" data-total="B03002_001E" data-type="rate" data-variables="B03002_007E,B03002_008E,B03002_009E">Other (Non-Hispanic)</option>
+          <option value="B19013_001E" data-label="Median Household Income" data-type="median" data-variables="B19013_001E">Median Household Income</option>
+          <option value="B15003_022E,B15003_023E,B15003_024E,B15003_025E" data-label="Bachelor's Degree or Higher" data-total="B15003_001E" data-type="rate" data-variables="B15003_022E,B15003_023E,B15003_024E,B15003_025E">Bachelor's Degree or Higher</option>
         </select>
         <div id="chartContainer"><canvas id="demographicChart"></canvas></div>
       </details>
