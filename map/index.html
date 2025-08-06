@@ -11,50 +11,41 @@
 </head>
 <body>
   <header class="top-bar">
-    <div id="hamburger">&#9776;</div>
     <h1>Environmental Hazard Dashboard</h1>
     <button id="fullscreenBtn">Full Screen</button>
     <button id="aboutBtn">About</button>
   </header>
   <div id="main">
-    <aside id="sidePanel" class="open">
-      <div id="panelHandle" class="panel-handle">&#10094;</div>
-      <details id="loadData">
-        <summary>Load from dataset</summary>
+    <aside id="sidePanel">
+      <details id="dataStep" open>
+        <summary>Step 1: Load or Search Data</summary>
         <ul>
           <li data-url="hazardous_sites_small.csv">Hazardous Waste Sites</li>
           <li data-url="superfund_sites.csv">Superfund Sites</li>
         </ul>
-      </details>
-      <details>
-        <summary>Upload dataset</summary>
         <input type="file" id="fileInput" accept=".csv,.geojson">
         <div><a href="template.csv" download>Download template CSV</a></div>
-      </details>
-      <details>
-        <summary>Selection Instructions</summary>
-        <div style="font-size: 12px; color: #666; padding: 5px;">
-          1. Load a dataset above<br>
-          2. Use layer control (top-right) to switch map styles<br>
-          3. Click individual markers to select them<br>
-          4. Selected markers turn red<br>
-          5. Set buffer distances below<br>
-          6. Click "Get Demographics" to analyze
+        <div id="search-container">
+          <input type="text" id="search-input" placeholder="Enter address, city, or zip...">
+          <button id="search-btn">Search</button>
         </div>
       </details>
-      <details id="bufferControl">
-        <summary>Select proximal buffer range (miles)</summary>
+      <details id="selectionStep" open>
+        <summary>Step 2: Select Markers</summary>
+        <div id="selectionCount">Selected Points: 0</div>
+        <button id="clearSelectionBtn">Clear Selection</button>
+      </details>
+      <details id="distanceStep" open>
+        <summary>Step 3: Set Buffer Distances</summary>
+        <label for="proximalSlider">Proximal (miles)</label>
         <input type="range" id="proximalSlider" min="0" max="20" value="0" step="0.25">
         <span id="proximalValue">0.00</span>
-      </details>
-      <details id="distalControl">
-        <summary>Select distal buffer range (miles)</summary>
+        <label for="distalSlider">Distal (miles)</label>
         <input type="range" id="distalSlider" min="0" max="100" value="0" step="0.25">
         <span id="distalValue">0.00</span>
       </details>
-      <button id="demographicsBtn">Get Demographics</button>
-      <details id="chartPanel" open>
-        <summary>Demographic Chart</summary>
+      <details id="demographicsStep" open>
+        <summary>Step 4: Choose Demographic</summary>
         <label for="demographicSelect">Data Marker:</label>
         <select id="demographicSelect">
           <option value="B03002_003E" data-label="Non-Hispanic White" data-total="B03002_001E" data-type="rate" data-variables="B03002_003E">Non-Hispanic White</option>
@@ -66,14 +57,11 @@
           <option value="B19013_001E" data-label="Median Household Income" data-type="median" data-variables="B19013_001E">Median Household Income</option>
           <option value="B15003_022E,B15003_023E,B15003_024E,B15003_025E" data-label="Bachelor's Degree or Higher" data-total="B15003_001E" data-type="rate" data-variables="B15003_022E,B15003_023E,B15003_024E,B15003_025E">Bachelor's Degree or Higher</option>
         </select>
-        <div id="chartContainer"><canvas id="demographicChart"></canvas></div>
       </details>
-      <details open>
-        <summary>Search by Address</summary>
-        <div id="search-container">
-          <input type="text" id="search-input" placeholder="Enter address, city, or zip...">
-          <button id="search-btn">Search</button>
-        </div>
+      <details id="analyzeStep" open>
+        <summary>Step 5: Analyze</summary>
+        <button id="analyzeBtn">Analyze</button>
+        <div id="chartContainer"><canvas id="demographicChart"></canvas></div>
       </details>
     </aside>
     <div id="map"></div>
