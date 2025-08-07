@@ -443,12 +443,13 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
 
 // Address Search Functionality
 let searchMarker;
+const FLORIDA_VIEWBOX = '-87.6349,31.000968,-79.974307,24.396308';
 
 async function searchAddress() {
   const query = document.getElementById('search-input').value;
   if (!query) return;
 
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=us&viewbox=${FLORIDA_VIEWBOX}`;
   const searchBtn = document.getElementById('search-btn');
   searchBtn.textContent = 'Searching...';
   searchBtn.disabled = true;
@@ -464,15 +465,14 @@ async function searchAddress() {
       map.flyTo(latLng, 14);
 
       if (searchMarker) {
+        if (searchMarker.isSelected) {
+          toggleMarkerSelection(searchMarker);
+        }
         map.removeLayer(searchMarker);
       }
 
-      searchMarker = L.marker(latLng, {
-        icon: L.divIcon({
-          className: 'search-result-marker',
-          html: '<div class="pulsating-dot"></div>'
-        })
-      }).addTo(map).bindPopup(`<b>Search Result:</b><br>${display_name}`).openPopup();
+      searchMarker = createMarker(latLng[0], latLng[1], { 'Search Result': display_name });
+      searchMarker.addTo(map).openPopup();
 
     } else {
       alert('Address not found. Please try a different search.');
