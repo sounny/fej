@@ -394,9 +394,11 @@ async function compileDemographics() {
   const distUnitDetails = [];
   const pointSummaries = []; // per-selected-point summary for proximal ring
 
+  const selectedPointsOrdered = [];
   for (const marker of selectedMarkers) {
     const lat = marker.getLatLng().lat;
     const lng = marker.getLatLng().lng;
+    selectedPointsOrdered.push({ lat, lng });
     try {
       if (GEO_LEVEL === 'tract') {
         const proxTracts = await getTracts(lat, lng, proxRadius);
@@ -600,7 +602,8 @@ async function compileDemographics() {
     distalMiles,
   proxUnits: proxUnitDetails,
   distUnits: distUnitDetails,
-  pointSummaries
+  pointSummaries,
+  selectedPoints: selectedPointsOrdered
   };
 }
 
@@ -694,13 +697,49 @@ function openChartPopout() {
   const title = lastAnalysis.chartLabel;
   const center = map.getCenter();
   const zoom = map.getZoom();
-  const selPoints = Array.from(selectedMarkers).map(m=>({lat:m.getLatLng().lat,lng:m.getLatLng().lng}));
+  const selPoints = (lastAnalysis.selectedPoints && lastAnalysis.selectedPoints.length)
+    ? lastAnalysis.selectedPoints
+    : Array.from(selectedMarkers).map(m=>({lat:m.getLatLng().lat,lng:m.getLatLng().lng}));
   const proxMi = proximalMiles;
   const distMi = distalMiles;
   const geoName = lastAnalysis.geography==='tract'?'Tract':'Block Group';
   const perPointRows = (lastAnalysis.pointSummaries||[])
     .map((p,i)=>`<tr data-lat="${p.lat}" data-lng="${p.lng}"><td>${i+1}</td><td>${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</td><td>${p.units}</td><td>${Number(p.value).toFixed(2)}</td></tr>`)
     .join('');
+
+  // Build per-unit tables for proximal/distal (summary and raw)
+  function unitId(u, isTract){ return isTract ? (u.s+'-'+u.c+'-'+u.t) : (u.s+'-'+u.c+'-'+u.t+'-'+(u.b||'')); }
+  function buildSummaryTable(units, type, isTract, title){
+    var h = '<div class="subsection"><h3 style="margin:8px 0">'+title+'</h3><table><thead>';
+    if (type==='median') {
+      h += '<tr><th>ID</th><th>Median</th></tr></thead><tbody>';
+      units.forEach(function(u){ h += '<tr><td>'+unitId(u,isTract)+'</td><td>'+ (isNaN(u.median)?'':u.median) +'</td></tr>'; });
+    } else {
+      h += '<tr><th>ID</th><th>Pop</th><th>Numerator</th><th>Rate/1k</th></tr></thead><tbody>';
+      units.forEach(function(u){ h += '<tr><td>'+unitId(u,isTract)+'</td><td>'+ (u.pop||0) +'</td><td>'+ (u.value||0) +'</td><td>'+ (u.ratePer1k||0) +'</td></tr>'; });
+    }
+    h += '</tbody></table></div>';
+    return h;
+  }
+  function buildRawTable(units, type, isTract, title){
+    var h = '<div class="subsection"><h3 style="margin:8px 0">'+title+'</h3><table><thead>';
+    if (type==='median') {
+      h += '<tr><th>STATE</th><th>COUNTY</th><th>TRACT</th>'+ (isTract?'':'<th>BLKGRP</th>') +'<th>Median</th></tr></thead><tbody>';
+      units.forEach(function(u){ h += '<tr><td>'+u.s+'</td><td>'+u.c+'</td><td>'+u.t+'</td>'+ (isTract?'':'<td>'+(u.b||'')+'</td>') +'<td>'+ (isNaN(u.median)?'':u.median) +'</td></tr>'; });
+    } else {
+      h += '<tr><th>STATE</th><th>COUNTY</th><th>TRACT</th>'+ (isTract?'':'<th>BLKGRP</th>') +'<th>pop</th><th>value</th><th>ratePer1k</th></tr></thead><tbody>';
+      units.forEach(function(u){ h += '<tr><td>'+u.s+'</td><td>'+u.c+'</td><td>'+u.t+'</td>'+ (isTract?'':'<td>'+(u.b||'')+'</td>') +'<td>'+ (u.pop||0) +'</td><td>'+ (u.value||0) +'</td><td>'+ (u.ratePer1k||0) +'</td></tr>'; });
+    }
+    h += '</tbody></table></div>';
+    return h;
+  }
+  const isTract = lastAnalysis.geography==='tract';
+  const proxSummaryTableHtml = buildSummaryTable(lastAnalysis.proxUnits||[], lastAnalysis.type, isTract, 'Proximal '+geoName+'s');
+  const distSummaryTableHtml = buildSummaryTable(lastAnalysis.distUnits||[], lastAnalysis.type, isTract, 'Distal '+geoName+'s');
+  const unitsSummaryHtml = proxSummaryTableHtml + '<div style="height:8px"></div>' + distSummaryTableHtml;
+  const proxRawTableHtml = buildRawTable(lastAnalysis.proxUnits||[], lastAnalysis.type, isTract, 'Proximal '+geoName+'s (raw)');
+  const distRawTableHtml = buildRawTable(lastAnalysis.distUnits||[], lastAnalysis.type, isTract, 'Distal '+geoName+'s (raw)');
+  const unitsRawHtml = proxRawTableHtml + '<div style="height:8px"></div>' + distRawTableHtml;
 
   const css = `
     body{margin:0;background:#0F172A;color:#fff;font-family:Arial,sans-serif}
@@ -718,6 +757,7 @@ function openChartPopout() {
     #miniMap{height:360px}
     .pill{display:inline-block;background:#2563EB;padding:2px 8px;border-radius:999px;font-size:12px;margin-right:6px}
     .chips{display:flex;gap:6px;flex-wrap:wrap}
+    .leaflet-tooltip.ptlabel{background:#111827;color:#fff;border:1px solid #334155;border-radius:12px;padding:2px 6px;font-weight:bold}
   `;
 
   const siteList = selPoints.map((p,i)=>`<li>#${i+1}: ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</li>`).join('');
@@ -753,6 +793,14 @@ function openChartPopout() {
         </div>
       </div>
       <div class="section">
+        <h2>${geoName}s used (per-unit values)</h2>
+        <div class="content table-wrap">${unitsSummaryHtml}</div>
+      </div>
+      <div class="section">
+        <h2>${geoName} details (raw)</h2>
+        <div class="content table-wrap">${unitsRawHtml}</div>
+      </div>
+      <div class="section">
         <h2>Map & Buffers</h2>
         <div class="content"><div id="miniMap"></div></div>
       </div>
@@ -765,8 +813,9 @@ function openChartPopout() {
       const proxR = ${proxMi*1609.34};
       const distR = ${distMi*1609.34};
       const mkGroup = L.featureGroup().addTo(map2);
-      points.forEach(p=>{
+      points.forEach((p,idx)=>{
         const mk = L.circleMarker([p.lat,p.lng],{radius:6,color:'#fff',fillColor:'#2563EB',fillOpacity:1,weight:2}).addTo(mkGroup);
+        mk.bindTooltip(String(idx+1), {permanent:true, direction:'center', className:'ptlabel'});
         if (proxR>0) L.circle([p.lat,p.lng],{radius:proxR,color:'#1976D2',weight:1,fill:false}).addTo(mkGroup);
         if (distR>0) L.circle([p.lat,p.lng],{radius:distR,color:'#F57C00',weight:1,fill:false}).addTo(mkGroup);
       });
