@@ -199,13 +199,29 @@ details summary {
 
 #chartContainer {
   width: 100%;
-  height: 180px;
+  height: 240px; /* increased to prevent overlap */
   margin-top: 10px;
+  position: relative;
+}
+
+.chart-meta {
+  font-size: 12px;
+  color: #B0BEC5;
+  margin-top: 6px;
+}
+
+.chart-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px; /* extra spacing below chart */
+  position: relative;
+  z-index: 2; /* ensure buttons are clickable above canvas */
 }
 
 #chartContainer canvas {
   width: 100% !important;
   height: 100% !important;
+  display: block;
 }
 
 body.fullscreen .top-bar {
@@ -243,4 +259,41 @@ body.fullscreen #map {
   text-align: center;
   color: #ccc;
   padding: 20px 0;
+}
+
+.chart-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.chart-actions button {
+  background: #1976D2;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.chart-actions button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.results-table {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+.results-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.results-table th, .results-table td {
+  border: 1px solid #444;
+  padding: 6px 8px;
+  text-align: left;
+}
+.results-table th {
+  background: #2C3A52;
 }

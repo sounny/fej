@@ -45,7 +45,7 @@
         <span id="distalValue">0.00</span>
       </details>
       <details id="demographicsStep" open>
-        <summary>Step 4: Choose Demographic</summary>
+        <summary>Step 4: Choose Variables</summary>
         <label for="demographicSelect">Data Marker:</label>
         <select id="demographicSelect">
           <option value="B03002_003E" data-label="Non-Hispanic White" data-total="B03002_001E" data-type="rate" data-variables="B03002_003E">Non-Hispanic White</option>
@@ -58,10 +58,34 @@
           <option value="B15003_022E,B15003_023E,B15003_024E,B15003_025E" data-label="Bachelor's Degree or Higher" data-total="B15003_001E" data-type="rate" data-variables="B15003_022E,B15003_023E,B15003_024E,B15003_025E">Bachelor's Degree or Higher</option>
         </select>
       </details>
+      <details id="censusStep" open>
+        <summary>Step 4b: Census Options</summary>
+        <label for="acsYearSelect">ACS Year:</label>
+        <select id="acsYearSelect">
+          <option value="2023" selected>2023</option>
+          <option value="2022">2022</option>
+          <option value="2021">2021</option>
+          <option value="2020">2020</option>
+          <option value="2019">2019</option>
+        </select>
+        <br>
+        <label for="geographySelect">Geography:</label>
+        <select id="geographySelect">
+          <option value="bg">Block Group</option>
+          <option value="tract" selected>Tract</option>
+        </select>
+      </details>
       <details id="analyzeStep" open>
-        <summary>Step 5: Analyze</summary>
+        <summary>Step 5: Analyze & Export</summary>
         <button id="analyzeBtn">Analyze</button>
         <div id="chartContainer"><canvas id="demographicChart"></canvas></div>
+        <div id="chartMeta" class="chart-meta"></div>
+        <div id="chartActions" class="chart-actions">
+          <button id="chartPopoutBtn" disabled>Open Report</button>
+          <button id="downloadPngBtn" disabled>Download PNG</button>
+          <button id="downloadCsvBtn" disabled>Download CSV</button>
+        </div>
+        <div id="resultsTable" class="results-table"></div>
       </details>
     </aside>
     <div id="map"></div>
