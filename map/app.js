@@ -288,15 +288,38 @@ document.getElementById('aboutBtn').addEventListener('click', () => {
   window.location.href = 'https://sounny.github.io/fej';
 });
 
-// fullscreen toggle
-const fullscreenBtn = document.getElementById('fullscreenBtn');
-fullscreenBtn.addEventListener('click', () => {
-  document.body.classList.toggle('fullscreen');
-  fullscreenBtn.textContent = document.body.classList.contains('fullscreen') ? 'Exit Full Screen' : 'Full Screen';
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 310);
-});
+// Chart actions: wire up buttons
+const chartPopoutBtn = document.getElementById('chartPopoutBtn');
+const downloadPngBtn = document.getElementById('downloadPngBtn');
+const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+
+if (chartPopoutBtn) {
+  chartPopoutBtn.addEventListener('click', () => {
+    openChartPopout();
+  });
+}
+if (downloadPngBtn) {
+  downloadPngBtn.addEventListener('click', () => {
+    if (!demographicChart) return;
+    const a = document.createElement('a');
+    a.href = demographicChart.toBase64Image();
+    a.download = 'chart.png';
+    a.click();
+  });
+}
+if (downloadCsvBtn) {
+  downloadCsvBtn.addEventListener('click', () => {
+    if (!lastAnalysis) return;
+    const csv = buildCsvFromLastAnalysis();
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analysis.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
 
 async function getBlockGroups(lat, lng, radiusMeters) {
   const url = `https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/10/query?where=1%3D1&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&distance=${radiusMeters}&units=esriSRUnit_Meter&outFields=STATE,COUNTY,TRACT,BLKGRP&returnGeometry=false&f=json`;
@@ -575,8 +598,9 @@ async function compileDemographics() {
     distalSet: Array.from(distalSet),
     proximalMiles,
     distalMiles,
-    proxUnits: proxUnitDetails,
-    distUnits: distUnitDetails
+  proxUnits: proxUnitDetails,
+  distUnits: distUnitDetails,
+  pointSummaries
   };
 }
 
@@ -794,4 +818,46 @@ function openChartPopout() {
       drawGeos();
     </script>
   </body></html>`);
+}
+
+// Build CSV string from lastAnalysis (aggregates, per-point, per-unit)
+function buildCsvFromLastAnalysis() {
+  const la = lastAnalysis;
+  const lines = [];
+  lines.push(['Label', la.chartLabel].join(','));
+  lines.push(['ACS Year', la.acsYear].join(','));
+  lines.push(['Geography', la.geography].join(','));
+  lines.push(['Proximal (mi)', la.proximalMiles].join(','));
+  lines.push(['Distal (mi)', la.distalMiles].join(','));
+  lines.push([]);
+  lines.push(['Aggregate','Proximal','Distal'].join(','));
+  lines.push(['Value', la.proxValue, la.distValue].join(','));
+  lines.push([]);
+  // Per-point summaries
+  lines.push(['Per-point (proximal ring)'].join(','));
+  lines.push(['Lat','Lng','Units in Prox','Value'].join(','));
+  (la.pointSummaries||[]).forEach(p=>{
+    lines.push([p.lat, p.lng, p.units, p.value].join(','));
+  });
+  lines.push([]);
+  // Per-unit details
+  const geoHeader = la.geography==='tract' ? ['STATE','COUNTY','TRACT','b'] : ['STATE','COUNTY','TRACT','BLKGRP'];
+  if (la.type==='median'){
+    lines.push(['Proximal Units (Median)'].join(','));
+    lines.push([...geoHeader, 'median'].join(','));
+    la.proxUnits.forEach(u=>{ lines.push([u.s,u.c,u.t,u.b||'',u.median].join(',')); });
+    lines.push([]);
+    lines.push(['Distal Units (Median)'].join(','));
+    lines.push([...geoHeader, 'median'].join(','));
+    la.distUnits.forEach(u=>{ lines.push([u.s,u.c,u.t,u.b||'',u.median].join(',')); });
+  } else {
+    lines.push(['Proximal Units (Rate)'].join(','));
+    lines.push([...geoHeader, 'pop','value','ratePer1k'].join(','));
+    la.proxUnits.forEach(u=>{ lines.push([u.s,u.c,u.t,u.b||'',u.pop,u.value,u.ratePer1k].join(',')); });
+    lines.push([]);
+    lines.push(['Distal Units (Rate)'].join(','));
+    lines.push([...geoHeader, 'pop','value','ratePer1k'].join(','));
+    la.distUnits.forEach(u=>{ lines.push([u.s,u.c,u.t,u.b||'',u.pop,u.value,u.ratePer1k].join(',')); });
+  }
+  return lines.map(r=>Array.isArray(r)?r.join(','):r).join('\n');
 }

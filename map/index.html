@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Environmental Hazard Dashboard</title>
+  <title>Environmental Justic Dashboard</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
@@ -11,8 +11,7 @@
 </head>
 <body>
   <header class="top-bar">
-    <h1>Environmental Hazard Dashboard</h1>
-    <button id="fullscreenBtn">Full Screen</button>
+  <h1>Environmental Justice Dashboard</h1>
     <button id="aboutBtn">About</button>
   </header>
   <div id="main">
@@ -45,35 +44,38 @@
         <span id="distalValue">0.00</span>
       </details>
       <details id="demographicsStep" open>
-        <summary>Step 4: Choose Variables</summary>
+        <summary>Step 4: Variables & Census Options</summary>
         <label for="demographicSelect">Data Marker:</label>
         <select id="demographicSelect">
+          <!-- Default: Median Household Income -->
+          <option value="B19013_001E" data-label="Median Household Income" data-type="median" data-variables="B19013_001E" selected>Median Household Income</option>
+          <!-- Second: Educational Attainment -->
+          <option value="B15003_022E,B15003_023E,B15003_024E,B15003_025E" data-label="Bachelor's Degree or Higher" data-total="B15003_001E" data-type="rate" data-variables="B15003_022E,B15003_023E,B15003_024E,B15003_025E">Bachelor's Degree or Higher</option>
+          <!-- Then race variables -->
           <option value="B03002_003E" data-label="Non-Hispanic White" data-total="B03002_001E" data-type="rate" data-variables="B03002_003E">Non-Hispanic White</option>
           <option value="B03002_004E" data-label="Non-Hispanic Black" data-total="B03002_001E" data-type="rate" data-variables="B03002_004E">Non-Hispanic Black</option>
           <option value="B03002_006E" data-label="Asian" data-total="B03002_001E" data-type="rate" data-variables="B03002_006E">Asian</option>
           <option value="B03002_005E" data-label="Native American" data-total="B03002_001E" data-type="rate" data-variables="B03002_005E">Native American</option>
           <option value="B03002_012E" data-label="Hispanic or Latino" data-total="B03002_001E" data-type="rate" data-variables="B03002_012E">Hispanic or Latino</option>
           <option value="B03002_007E,B03002_008E,B03002_009E" data-label="Other (Non-Hispanic)" data-total="B03002_001E" data-type="rate" data-variables="B03002_007E,B03002_008E,B03002_009E">Other (Non-Hispanic)</option>
-          <option value="B19013_001E" data-label="Median Household Income" data-type="median" data-variables="B19013_001E">Median Household Income</option>
-          <option value="B15003_022E,B15003_023E,B15003_024E,B15003_025E" data-label="Bachelor's Degree or Higher" data-total="B15003_001E" data-type="rate" data-variables="B15003_022E,B15003_023E,B15003_024E,B15003_025E">Bachelor's Degree or Higher</option>
         </select>
-      </details>
-      <details id="censusStep" open>
-        <summary>Step 4b: Census Options</summary>
-        <label for="acsYearSelect">ACS Year:</label>
-        <select id="acsYearSelect">
-          <option value="2023" selected>2023</option>
-          <option value="2022">2022</option>
-          <option value="2021">2021</option>
-          <option value="2020">2020</option>
-          <option value="2019">2019</option>
-        </select>
-        <br>
-        <label for="geographySelect">Geography:</label>
-        <select id="geographySelect">
-          <option value="bg">Block Group</option>
-          <option value="tract" selected>Tract</option>
-        </select>
+        <div style="margin-top:8px">
+          <label for="acsYearSelect">ACS Year:</label>
+          <select id="acsYearSelect">
+            <option value="2023" selected>2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+            <option value="2019">2019</option>
+          </select>
+        </div>
+        <div style="margin-top:8px">
+          <label for="geographySelect">Geography:</label>
+          <select id="geographySelect">
+            <option value="bg">Block Group</option>
+            <option value="tract" selected>Tract</option>
+          </select>
+        </div>
       </details>
       <details id="analyzeStep" open>
         <summary>Step 5: Analyze & Export</summary>

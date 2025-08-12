@@ -24,8 +24,7 @@ body {
   margin: 0;
 }
 
-#aboutBtn,
-#fullscreenBtn {
+#aboutBtn {
   background: #1976D2;
   color: #fff;
   border: none;
@@ -224,26 +223,7 @@ details summary {
   display: block;
 }
 
-body.fullscreen .top-bar {
-  display: none;
-}
-
-body.fullscreen #main {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-}
-
-body.fullscreen #sidePanel {
-  display: none;
-}
-
-body.fullscreen #map {
-  height: 100%;
-}
+/* fullscreen styles removed */
 
 @media (max-width: 768px) {
   #sidePanel {
