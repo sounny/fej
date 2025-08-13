@@ -15,9 +15,11 @@
         <p>Welcome to the Florida Environmental Justice (FEJ) Almanac Project. This project aims to map various environmental hazards and spatially join them to demographic data to highlight disparities in exposure to environmental pollutants across different communities in Florida.</p>
         <p>The first segment of this project includes geocoding Superfund sites and spatially joining them with demographic data in the state of Florida. The goal is to analyze the data to determine if the public health risks associated with proximity to Superfund sites affects disadvantaged individuals and groups disproportionately. </p>
         <h2>What is Environmental Justice?</h2>
-        <p>Environmental justice became incredibly popularized in the 1980s, though many believe its roots are tied to the Civil Rights and Environmental Movements of the ‘60s and ‘70s (Congressional Black Caucus Foundation, n.d.). One group, the United Church of Christ (UCC), is famously accredited as some being one of the earliest pioneers of environmental justice in creating a pivotal unprecedented mapping of environmental hazards and racial injustices, and even coining the term “environmental racism” (UCC, n.d. & Maantay, 2002).</p>
-
-        <p>Since then, many have set out to define, identify, and address environmental justice (Maantay, 2002, EPA, 2020, Mohai, 2006, & Grattet et al., 2021). The Environmental Protection Agency (EPA), the regulating body of environmental protection in the US, currently defines environmental justice as “the just treatment and meaningful involvement of all people […] in agency decision-making and other Federal activities that affect human health and the environment” (EPA, 2024).</p>
+        <p>In this project, environmental justice focuses on measurable differences in environmental burdens (for example, hazardous sites or pollution sources) and environmental benefits across places, and how those differences correlate with socioeconomic characteristics such as income and educational attainment. The emphasis is on quantifying disparities in exposure and proximity, rather than making normative judgments.</p>
+        <blockquote class="blockquote">
+            <p class="mb-0"><strong>Environmental justice:</strong> quantifying who bears environmental burdens and who benefits — then relating those patterns to socioeconomic characteristics.</p>
+        </blockquote>
+        <p>We rely on public data sources — including U.S. Census Bureau American Community Survey (ACS) statistics and facility inventories — to compare communities using consistent methods. The goal is to provide transparent, reproducible evidence about patterns of impacts and proximity.</p>
         <h2>Researchers</h2>
         <ul>
             <li><a href="https://sounny.github.io/">Moulay Anwar Sounny-Slitine, PhD</a></li>
@@ -34,17 +36,30 @@
 
         <h2>Datasets</h2>
         <ul>
-            <li><a href="#datasets">Datasets</a> (Coming Soon)</li>
+            <li><a href="map/superfund_sites.csv">superfund_sites.csv</a> — CSV with site latitude/longitude only.</li>
+            <li><a href="map/hazardous_sites_small.csv">hazardous_sites_small.csv</a> — CSV with site latitude/longitude only.</li>
         </ul>
 
         <h2>Tools</h2>
         <ul>
-            <li><a href="map/index.html">Environmental Hazard Mapping Tool</a></li>
+            <li>
+                <a href="map/index.html">Environmental Justice Dashboard</a><br>
+                <small class="text-muted">Interactive map and analysis tool to compare socioeconomic indicators (ACS tracts or block groups) near environmental hazard sites using configurable buffer rings, ACS year selection, and downloadable chart/CSV outputs.</small>
+            </li>
         </ul>
 
         <h2>Findings</h2>
         <ul>
             <li><a href="SimoneGionfriddoPoster.pdf">Mapping Environmental Injustices in Florida: An Initial Analysis of Superfund Sites & Demographic Data Presented at Florida Society of Geographers Annual Meeting - Dr. M. Anwar Sounny-Slitine & Simone Gionfriddo</a></li>
+        </ul>
+
+        <h2>Learn More</h2>
+        <ul>
+            <li><a href="https://www.epa.gov/environmentaljustice">EPA: Environmental Justice</a></li>
+            <li><a href="https://www.whitehouse.gov/ceq/initiatives/environmental-justice/">Council on Environmental Quality: Environmental Justice</a></li>
+            <li><a href="https://www.hhs.gov/environmental-justice/index.html">U.S. Department of Health & Human Services: Environmental Justice</a></li>
+            <li><a href="https://www.atsdr.cdc.gov/placeandhealth/eji/index.html">CDC/ATSDR: Environmental Justice Index</a></li>
+            <li><a href="https://www.noaa.gov/education/resource-collections/ocean-coasts-education-resources/environmental-justice">NOAA: Environmental Justice</a></li>
         </ul>
         <h2>Bibliography</h2>
         <p>Congressional Black Caucus Foundation. (n.d.). History. <a href="https://avoice.cbcfinc.org/exhibits/environmental-justice/history/#:~:text=The%20Environmental%20Justice%20Movement%20emerged,negatively%20affected%20communities%20of%20color">https://avoice.cbcfinc.org/exhibits/environmental-justice/history/#:~:text=The%20Environmental%20Justice%20Movement%20emerged,negatively%20affected%20communities%20of%20color</a>. Accessed June 8, 2024.</p>
