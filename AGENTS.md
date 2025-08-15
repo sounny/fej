@@ -16,6 +16,7 @@ Welcome to the FEJ Almanac Project repository.
 
 ## Agent Log
 
+2025-08-15: Added health insurance coverage, median home value, and median gross rent options for socioeconomic analysis (OpenAI Assistant).
 2025-08-15: Moved report map to top, added site names to legend, included distal per-point stats and per-site bar chart (OpenAI Assistant).
 2025-08-14: Treat negative Census values as no data and exclude them from averages (OpenAI Assistant).
 2025-08-09: Biased address search to Florida and made search result marker selectable (OpenAI Assistant).
