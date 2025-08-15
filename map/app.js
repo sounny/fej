@@ -350,10 +350,17 @@ async function fetchACSCount(state, county, tract, blkgrp, variables, totalVar) 
   }
   const data = await res.json();
   const row = data[1];
-  const pop = parseInt(row[0]);
+  let pop = parseInt(row[0]);
+  if (isNaN(pop) || pop < 0) {
+    return { pop: NaN, value: NaN };
+  }
   let value = 0;
   for (let i = 1; i <= variables.length; i++) {
-    value += parseInt(row[i]);
+    const v = parseInt(row[i]);
+    if (isNaN(v) || v < 0) {
+      return { pop: NaN, value: NaN };
+    }
+    value += v;
   }
   return { pop, value };
 }
@@ -371,7 +378,8 @@ async function fetchACSMedian(state, county, tract, blkgrp, variable) {
   }
   const data = await res.json();
   const row = data[1];
-  return parseInt(row[0]);
+  const val = parseInt(row[0]);
+  return (isNaN(val) || val < 0) ? NaN : val;
 }
 
 async function compileDemographics() {
@@ -422,7 +430,9 @@ async function compileDemographics() {
             } catch {}
           }
         }
-        const perPointValue = type === 'median' ? (pCount > 0 ? pMetric / pCount : 0) : (pPop > 0 ? (pMetric / pPop) * 1000 : 0);
+        const perPointValue = type === 'median'
+          ? (pCount > 0 ? pMetric / pCount : NaN)
+          : (pPop > 0 ? (pMetric / pPop) * 1000 : NaN);
         pointSummaries.push({ lat, lng, value: perPointValue, units: proxTracts.length });
       } else {
         const proxBgs = await getBlockGroups(lat, lng, proxRadius);
@@ -446,7 +456,9 @@ async function compileDemographics() {
             } catch {}
           }
         }
-        const perPointValue = type === 'median' ? (pCount > 0 ? pMetric / pCount : 0) : (pPop > 0 ? (pMetric / pPop) * 1000 : 0);
+        const perPointValue = type === 'median'
+          ? (pCount > 0 ? pMetric / pCount : NaN)
+          : (pPop > 0 ? (pMetric / pPop) * 1000 : NaN);
         pointSummaries.push({ lat, lng, value: perPointValue, units: proxBgs.length });
       }
     } catch (error) {
@@ -515,12 +527,12 @@ async function compileDemographics() {
 
   let proxValue, distValue, chartLabel;
   if (type === 'median') {
-    proxValue = proxCount > 0 ? proxMetric / proxCount : 0;
-    distValue = distCount > 0 ? distMetric / distCount : 0;
+    proxValue = proxCount > 0 ? proxMetric / proxCount : NaN;
+    distValue = distCount > 0 ? distMetric / distCount : NaN;
     chartLabel = label;
   } else {
-    proxValue = proxPop > 0 ? (proxMetric / proxPop) * 1000 : 0;
-    distValue = distPop > 0 ? (distMetric / distPop) * 1000 : 0;
+    proxValue = proxPop > 0 ? (proxMetric / proxPop) * 1000 : NaN;
+    distValue = distPop > 0 ? (distMetric / distPop) * 1000 : NaN;
     chartLabel = `${label} per 1,000 residents`;
   }
 
@@ -537,7 +549,7 @@ async function compileDemographics() {
       labels: ['Proximal', 'Distal'],
       datasets: [{
         label: chartLabel,
-        data: [proxValue, distValue],
+        data: [isNaN(proxValue) ? null : proxValue, isNaN(distValue) ? null : distValue],
         backgroundColor: ['#1976D2', '#F57C00']
       }]
     },
@@ -704,7 +716,7 @@ function openChartPopout() {
   const distMi = distalMiles;
   const geoName = lastAnalysis.geography==='tract'?'Tract':'Block Group';
   const perPointRows = (lastAnalysis.pointSummaries||[])
-    .map((p,i)=>`<tr data-lat="${p.lat}" data-lng="${p.lng}"><td>${i+1}</td><td>${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</td><td>${p.units}</td><td>${Number(p.value).toFixed(2)}</td></tr>`)
+    .map((p,i)=>`<tr data-lat="${p.lat}" data-lng="${p.lng}"><td>${i+1}</td><td>${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</td><td>${p.units}</td><td>${isNaN(p.value)?'No data':Number(p.value).toFixed(2)}</td></tr>`)
     .join('');
 
   // Build per-unit tables for proximal/distal (summary and raw)
@@ -873,6 +885,7 @@ function openChartPopout() {
 function buildCsvFromLastAnalysis() {
   const la = lastAnalysis;
   const lines = [];
+  const fmt = (v) => (isNaN(v) ? '' : v);
   lines.push(['Label', la.chartLabel].join(','));
   lines.push(['ACS Year', la.acsYear].join(','));
   lines.push(['Geography', la.geography].join(','));
@@ -880,13 +893,13 @@ function buildCsvFromLastAnalysis() {
   lines.push(['Distal (mi)', la.distalMiles].join(','));
   lines.push([]);
   lines.push(['Aggregate','Proximal','Distal'].join(','));
-  lines.push(['Value', la.proxValue, la.distValue].join(','));
+  lines.push(['Value', fmt(la.proxValue), fmt(la.distValue)].join(','));
   lines.push([]);
   // Per-point summaries
   lines.push(['Per-point (proximal ring)'].join(','));
   lines.push(['Lat','Lng','Units in Prox','Value'].join(','));
   (la.pointSummaries||[]).forEach(p=>{
-    lines.push([p.lat, p.lng, p.units, p.value].join(','));
+    lines.push([p.lat, p.lng, p.units, fmt(p.value)].join(','));
   });
   lines.push([]);
   // Per-unit details

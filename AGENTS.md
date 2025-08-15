@@ -16,6 +16,7 @@ Welcome to the FEJ Almanac Project repository.
 
 ## Agent Log
 
+2025-08-14: Treat negative Census values as no data and exclude them from averages (OpenAI Assistant).
 2025-08-09: Biased address search to Florida and made search result marker selectable (OpenAI Assistant).
 2025-08-08: Reorganized side panel into step-based workflow with integrated data loading and search, added side-panel controls for selection, distances, demographics, and analysis, removed collapsible panel and map buttons, and added chart loading indicator (OpenAI Assistant).
 2025-08-07: Added dashboard fullscreen toggle, responsive side panel handle with expanded demographic options including income and education (OpenAI Assistant).
