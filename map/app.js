@@ -406,13 +406,15 @@ async function compileDemographics() {
   for (const marker of selectedMarkers) {
     const lat = marker.getLatLng().lat;
     const lng = marker.getLatLng().lng;
-    selectedPointsOrdered.push({ lat, lng });
+    const name = marker.originalData?.Location || marker.originalData?.name || '';
+    selectedPointsOrdered.push({ lat, lng, name });
     try {
       if (GEO_LEVEL === 'tract') {
         const proxTracts = await getTracts(lat, lng, proxRadius);
         proxTracts.forEach(t => proximalSet.add(`${t.STATE}|${t.COUNTY}|${t.TRACT}`));
+        let distTracts = [];
         if (distRadius > proxRadius) {
-          const distTracts = await getTracts(lat, lng, distRadius);
+          distTracts = await getTracts(lat, lng, distRadius);
           distTracts.forEach(t => distalSet.add(`${t.STATE}|${t.COUNTY}|${t.TRACT}`));
         }
         // per-point proximal summary
@@ -433,12 +435,34 @@ async function compileDemographics() {
         const perPointValue = type === 'median'
           ? (pCount > 0 ? pMetric / pCount : NaN)
           : (pPop > 0 ? (pMetric / pPop) * 1000 : NaN);
-        pointSummaries.push({ lat, lng, value: perPointValue, units: proxTracts.length });
+
+        // per-point distal summary
+        let dPop = 0, dMetric = 0, dCount = 0, ringTracts = [];
+        if (distTracts && distTracts.length) {
+          const proxKeys = new Set(proxTracts.map(t=>`${t.STATE}|${t.COUNTY}|${t.TRACT}`));
+          ringTracts = distTracts.filter(t=>!proxKeys.has(`${t.STATE}|${t.COUNTY}|${t.TRACT}`));
+          for (const t of ringTracts) {
+            try {
+              if (type === 'median') {
+                const med = await fetchACSMedian(t.STATE, t.COUNTY, t.TRACT, undefined, variables[0]);
+                if (!isNaN(med)) { dMetric += med; dCount++; }
+              } else {
+                const d = await fetchACSCount(t.STATE, t.COUNTY, t.TRACT, undefined, variables, totalVar);
+                if (!isNaN(d.pop) && !isNaN(d.value)) { dPop += d.pop; dMetric += d.value; }
+              }
+            } catch {}
+          }
+        }
+        const perPointDistValue = type === 'median'
+          ? (dCount > 0 ? dMetric / dCount : NaN)
+          : (dPop > 0 ? (dMetric / dPop) * 1000 : NaN);
+        pointSummaries.push({ lat, lng, name, value: perPointValue, units: proxTracts.length, distUnits: ringTracts.length, distValue: perPointDistValue });
       } else {
         const proxBgs = await getBlockGroups(lat, lng, proxRadius);
         proxBgs.forEach(bg => proximalSet.add(`${bg.STATE}|${bg.COUNTY}|${bg.TRACT}|${bg.BLKGRP}`));
+        let distBgs = [];
         if (distRadius > proxRadius) {
-          const distBgs = await getBlockGroups(lat, lng, distRadius);
+          distBgs = await getBlockGroups(lat, lng, distRadius);
           distBgs.forEach(bg => distalSet.add(`${bg.STATE}|${bg.COUNTY}|${bg.TRACT}|${bg.BLKGRP}`));
         }
         // per-point proximal summary
@@ -459,7 +483,28 @@ async function compileDemographics() {
         const perPointValue = type === 'median'
           ? (pCount > 0 ? pMetric / pCount : NaN)
           : (pPop > 0 ? (pMetric / pPop) * 1000 : NaN);
-        pointSummaries.push({ lat, lng, value: perPointValue, units: proxBgs.length });
+
+        // per-point distal summary
+        let dPop = 0, dMetric = 0, dCount = 0, ringBgs = [];
+        if (distBgs && distBgs.length) {
+          const proxKeys = new Set(proxBgs.map(bg=>`${bg.STATE}|${bg.COUNTY}|${bg.TRACT}|${bg.BLKGRP}`));
+          ringBgs = distBgs.filter(bg=>!proxKeys.has(`${bg.STATE}|${bg.COUNTY}|${bg.TRACT}|${bg.BLKGRP}`));
+          for (const bg of ringBgs) {
+            try {
+              if (type === 'median') {
+                const med = await fetchACSMedian(bg.STATE, bg.COUNTY, bg.TRACT, bg.BLKGRP, variables[0]);
+                if (!isNaN(med)) { dMetric += med; dCount++; }
+              } else {
+                const d = await fetchACSCount(bg.STATE, bg.COUNTY, bg.TRACT, bg.BLKGRP, variables, totalVar);
+                if (!isNaN(d.pop) && !isNaN(d.value)) { dPop += d.pop; dMetric += d.value; }
+              }
+            } catch {}
+          }
+        }
+        const perPointDistValue = type === 'median'
+          ? (dCount > 0 ? dMetric / dCount : NaN)
+          : (dPop > 0 ? (dMetric / dPop) * 1000 : NaN);
+        pointSummaries.push({ lat, lng, name, value: perPointValue, units: proxBgs.length, distUnits: ringBgs.length, distValue: perPointDistValue });
       }
     } catch (error) {
       console.error(`Error getting geographies for marker at ${lat}, ${lng}:`, error);
@@ -711,12 +756,12 @@ function openChartPopout() {
   const zoom = map.getZoom();
   const selPoints = (lastAnalysis.selectedPoints && lastAnalysis.selectedPoints.length)
     ? lastAnalysis.selectedPoints
-    : Array.from(selectedMarkers).map(m=>({lat:m.getLatLng().lat,lng:m.getLatLng().lng}));
+    : Array.from(selectedMarkers).map(m=>({lat:m.getLatLng().lat,lng:m.getLatLng().lng,name:m.originalData?.Location||m.originalData?.name||''}));
   const proxMi = proximalMiles;
   const distMi = distalMiles;
   const geoName = lastAnalysis.geography==='tract'?'Tract':'Block Group';
   const perPointRows = (lastAnalysis.pointSummaries||[])
-    .map((p,i)=>`<tr data-lat="${p.lat}" data-lng="${p.lng}"><td>${i+1}</td><td>${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</td><td>${p.units}</td><td>${isNaN(p.value)?'No data':Number(p.value).toFixed(2)}</td></tr>`)
+    .map((p,i)=>`<tr data-lat="${p.lat}" data-lng="${p.lng}"><td>${i+1}</td><td>${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</td><td>${p.units}</td><td>${isNaN(p.value)?'No data':Number(p.value).toFixed(2)}</td><td>${p.distUnits||0}</td><td>${isNaN(p.distValue)?'No data':Number(p.distValue).toFixed(2)}</td></tr>`)
     .join('');
 
   // Build per-unit tables for proximal/distal (summary and raw)
@@ -772,7 +817,7 @@ function openChartPopout() {
     .leaflet-tooltip.ptlabel{background:#111827;color:#fff;border:1px solid #334155;border-radius:12px;padding:2px 6px;font-weight:bold}
   `;
 
-  const siteList = selPoints.map((p,i)=>`<li>#${i+1}: ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</li>`).join('');
+  const siteList = selPoints.map((p,i)=>`<li>#${i+1}: ${p.name?`${p.name} (${p.lat.toFixed(5)}, ${p.lng.toFixed(5)})`:`${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`}</li>`).join('');
 
   w.document.write(`<!DOCTYPE html><html><head><title>${title}</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -788,19 +833,27 @@ function openChartPopout() {
     </header>
     <div class="wrap">
       <div class="section">
-        <h2>Summary Chart</h2>
-        <div class="content"><img src="${chartImg}" alt="Chart" style="max-width:100%"></div>
+        <h2>Map & Buffers</h2>
+        <div class="content"><div id="miniMap"></div></div>
       </div>
       <div class="section">
         <h2>Sites</h2>
         <div class="content"><ul>${siteList||'<li>No sites</li>'}</ul></div>
       </div>
       <div class="section">
-        <h2>Per-point Results (proximal ring)</h2>
+        <h2>Summary Chart</h2>
+        <div class="content"><img src="${chartImg}" alt="Chart" style="max-width:100%"></div>
+      </div>
+      <div class="section">
+        <h2>Per-site Chart</h2>
+        <div class="content"><canvas id="siteChart"></canvas></div>
+      </div>
+      <div class="section">
+        <h2>Per-point Results</h2>
         <div class="content table-wrap">
           <table id="pointsTable">
-            <thead><tr><th>#</th><th>Point (lat, lon)</th><th>${geoName}s in Prox</th><th>${lastAnalysis.type==='median'?'Median':'Rate per 1000'}</th></tr></thead>
-            <tbody>${perPointRows||'<tr><td colspan="4">No data</td></tr>'}</tbody>
+            <thead><tr><th>#</th><th>Point (lat, lon)</th><th>${geoName}s in Prox</th><th>Prox ${lastAnalysis.type==='median'?'Median':'Rate per 1000'}</th><th>${geoName}s in Dist</th><th>Dist ${lastAnalysis.type==='median'?'Median':'Rate per 1000'}</th></tr></thead>
+            <tbody>${perPointRows||'<tr><td colspan="6">No data</td></tr>'}</tbody>
           </table>
         </div>
       </div>
@@ -812,13 +865,11 @@ function openChartPopout() {
         <h2>${geoName} details (raw)</h2>
         <div class="content table-wrap">${unitsRawHtml}</div>
       </div>
-      <div class="section">
-        <h2>Map & Buffers</h2>
-        <div class="content"><div id="miniMap"></div></div>
-      </div>
     </div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+      const pointSummaries = ${JSON.stringify(lastAnalysis.pointSummaries||[])};
       const map2 = L.map('miniMap').setView([${center.lat}, ${center.lng}], ${Math.max(5, Math.min(12, zoom))});
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map2);
       const points = ${JSON.stringify(selPoints)};
@@ -877,6 +928,12 @@ function openChartPopout() {
         }
       }
       drawGeos();
+
+      const ctx = document.getElementById('siteChart').getContext('2d');
+      const labels = pointSummaries.map((p,i)=>p.name?((i+1)+'. '+p.name):('Site '+(i+1)));
+      const proxVals = pointSummaries.map(p=>isNaN(p.value)?0:p.value);
+      const distVals = pointSummaries.map(p=>isNaN(p.distValue)?0:p.distValue);
+      new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Proximal',data:proxVals,backgroundColor:'#2563EB'},{label:'Distal',data:distVals,backgroundColor:'#F57C00'}]},options:{responsive:true,scales:{y:{beginAtZero:true}}}});
     </script>
   </body></html>`);
 }
@@ -896,10 +953,10 @@ function buildCsvFromLastAnalysis() {
   lines.push(['Value', fmt(la.proxValue), fmt(la.distValue)].join(','));
   lines.push([]);
   // Per-point summaries
-  lines.push(['Per-point (proximal ring)'].join(','));
-  lines.push(['Lat','Lng','Units in Prox','Value'].join(','));
+  lines.push(['Per-point'].join(','));
+  lines.push(['Lat','Lng','Units in Prox','Prox Value','Units in Dist','Dist Value'].join(','));
   (la.pointSummaries||[]).forEach(p=>{
-    lines.push([p.lat, p.lng, p.units, fmt(p.value)].join(','));
+    lines.push([p.lat, p.lng, p.units, fmt(p.value), p.distUnits||0, fmt(p.distValue)].join(','));
   });
   lines.push([]);
   // Per-unit details
